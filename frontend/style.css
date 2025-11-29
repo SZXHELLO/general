@@ -1,0 +1,491 @@
+/* 全局样式重置 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* 页面主体样式 */
+body {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: #e6e6e6;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* 登录界面样式 */
+.login-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.login-form {
+    background: rgba(15, 52, 96, 0.95);
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 126, 95, 0.3);
+}
+
+.login-title {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    background: linear-gradient(90deg, #ff7e5f, #feb47b);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 700;
+}
+
+.login-subtitle {
+    color: #a0a0a0;
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #feb47b;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #2d4059;
+    border-radius: 10px;
+    background: rgba(26, 26, 46, 0.8);
+    color: #e6e6e6;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #ff7e5f;
+    box-shadow: 0 0 0 3px rgba(255, 126, 95, 0.2);
+    background: rgba(26, 26, 46, 0.9);
+}
+
+.login-buttons {
+    display: flex;
+    gap: 15px;
+    margin: 25px 0 20px;
+}
+
+.login-buttons button {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 16px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #ff7e5f, #feb47b);
+    color: white;
+}
+
+.btn-secondary {
+    background: rgba(45, 64, 89, 0.8);
+    color: #e6e6e6;
+    border: 2px solid #2d4059;
+}
+
+.login-buttons button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 126, 95, 0.4);
+}
+
+.btn-secondary:hover {
+    border-color: #ff7e5f;
+}
+
+.error-message {
+    color: #e74c3c;
+    margin: 15px 0;
+    padding: 12px;
+    background: rgba(231, 76, 60, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+    display: none;
+    font-size: 0.9rem;
+}
+
+.success-message {
+    color: #2ecc71;
+    margin: 15px 0;
+    padding: 12px;
+    background: rgba(46, 204, 113, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(46, 204, 113, 0.3);
+    display: none;
+    font-size: 0.9rem;
+}
+
+.server-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #a0a0a0;
+    font-size: 0.85rem;
+    margin-top: 15px;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #e74c3c;
+    animation: pulse 2s infinite;
+}
+
+.status-dot.connected {
+    background: #2ecc71;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* 游戏界面样式 */
+.game-container {
+    display: none;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.user-info {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(15, 52, 96, 0.9);
+    padding: 12px 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 126, 95, 0.3);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logout-btn {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+    border: 1px solid rgba(231, 76, 60, 0.5);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+    background: rgba(231, 76, 60, 0.3);
+    transform: translateY(-1px);
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-top: 20px;
+}
+
+h1 {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, #ff7e5f, #feb47b);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 700;
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.subtitle {
+    font-size: 1.3rem;
+    color: #a0a0a0;
+    font-weight: 300;
+}
+
+.game-content {
+    display: flex;
+    gap: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+    align-items: flex-start;
+}
+
+/* 游戏棋盘区域 */
+.game-board-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.game-board {
+    background: rgba(15, 52, 96, 0.8);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 126, 95, 0.2);
+}
+
+canvas {
+    display: block;
+    border-radius: 10px;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.game-status {
+    background: rgba(15, 52, 96, 0.8);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 126, 95, 0.2);
+}
+
+.status-text {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #feb47b;
+    margin-bottom: 10px;
+}
+
+.selected-info {
+    font-size: 0.9rem;
+    color: #a0a0a0;
+}
+
+/* 游戏信息面板 */
+.game-info {
+    width: 350px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.info-section {
+    background: rgba(15, 52, 96, 0.8);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 126, 95, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+h2 {
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+    color: #feb47b;
+    border-bottom: 2px solid rgba(255, 126, 95, 0.3);
+    padding-bottom: 8px;
+    font-weight: 600;
+}
+
+/* 玩家信息样式 */
+.players-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.player {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    background: rgba(26, 26, 46, 0.6);
+}
+
+.player.active {
+    background: rgba(255, 126, 95, 0.1);
+    border: 1px solid rgba(255, 126, 95, 0.3);
+}
+
+.player:hover {
+    background: rgba(45, 64, 89, 0.6);
+    transform: translateX(5px);
+}
+
+.player-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin-right: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.player-info {
+    flex: 1;
+}
+
+.player-name {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 4px;
+}
+
+.player-stats {
+    font-size: 0.85rem;
+    color: #a0a0a0;
+}
+
+/* 控制按钮 */
+.controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.control-btn {
+    background: linear-gradient(135deg, #ff7e5f, #feb47b);
+    border: none;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.control-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 126, 95, 0.4);
+}
+
+.control-btn:active {
+    transform: translateY(0);
+}
+
+/* 规则和提示样式 */
+.rules-list, .tips {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.rule-item, .tip-item {
+    padding: 10px;
+    background: rgba(26, 26, 46, 0.4);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    border-left: 3px solid #ff7e5f;
+}
+
+.highlight {
+    color: #feb47b;
+    font-weight: 600;
+}
+
+.tip-item {
+    border-left-color: #4a90e2;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+    .game-content {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .game-info {
+        width: 100%;
+        max-width: 600px;
+    }
+}
+
+@media (max-width: 768px) {
+    .game-content {
+        gap: 20px;
+    }
+    
+    .game-board {
+        padding: 10px;
+    }
+    
+    canvas {
+        width: 100%;
+        height: auto;
+        max-width: 500px;
+    }
+    
+    .user-info {
+        position: static;
+        margin-bottom: 20px;
+        justify-content: space-between;
+    }
+    
+    h1 {
+        font-size: 2.2rem;
+    }
+    
+    .subtitle {
+        font-size: 1.1rem;
+    }
+    
+    .login-form {
+        margin: 20px;
+        padding: 30px 25px;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+    
+    .game-container {
+        padding: 10px;
+    }
+    
+    .login-form {
+        padding: 25px 20px;
+    }
+    
+    .login-title {
+        font-size: 2rem;
+    }
+    
+    h1 {
+        font-size: 1.8rem;
+    }
+    
+    .login-buttons {
+        flex-direction: column;
+    }
+}
