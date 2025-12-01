@@ -25,33 +25,44 @@ step4:最后输入mvn spring-boot:run，
 
 ```
 generals-game/
-├── frontend/           # 前端保持不变
+├── frontend/                    # 前端源代码（开发用）
+│   ├── src/
+│   │   ├── assets/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── utils/
+│   │   └── main.js
 │   ├── index.html
 │   ├── style.css
-│   └── script.js
-├── backend-java/       # Java后端
+│   ├── script.js
+│   ├── package.json
+│   └── README.md
+│
+├── backend-java/
 │   ├── src/
 │   │   └── main/
 │   │       ├── java/com/generals/
 │   │       │   ├── GeneralsApplication.java
 │   │       │   ├── controller/
-│   │       │   │   ├─ AuthController.java
-|   |       |   |   ├─ AuthResponse.java
-│   │       │   │   └── GameController.java
 │   │       │   ├── model/
-│   │       │   │   ├── User.java
-│   │       │   │   └── AuthRequest.java
 │   │       │   ├── service/
-│   │       │   │   ├── UserService.java
-│   │       │   │   └── JwtService.java
 │   │       │   └── config/
-│   │       │   |   ├── WebConfig.java
-│   │       │   |    └── SecurityConfig.java  
 │   │       └── resources/
 │   │           ├── application.properties
-│   │           └── static/          # 前端文件放在这里
+│   │           └── static/      # 生产环境前端文件（构建后复制进来）
+│   │               ├── index.html
+│   │               ├── style.css
+│   │               └── script.js
 │   ├── pom.xml
 │   └── README.md
+│
+├── scripts/
+│   └── deploy-frontend.js
+│
+├── docs/
+│   ├── API.md
+│   └── DEPLOYMENT.md
+│
 └── README.md
 ```
 
