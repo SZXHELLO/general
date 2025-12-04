@@ -9,7 +9,8 @@ step4:最后输入mvn spring-boot:run，
 
 正常情况下会自动运行，可以参考下图（红框内时上面输入的三条指令,红框下面时程序正常运行的部分反馈结果，如果能够正常运行，是不会跳出红色字样的）
 
-![guide1](C:\Users\25283\Desktop\guide1.png)
+<img width="867" height="464" alt="guide1" src="https://github.com/user-attachments/assets/09a81dc4-d3fc-42f2-88ba-1962c6d8e390" />
+
 
 *如何打开前端：
 
