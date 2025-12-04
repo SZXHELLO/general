@@ -33,4 +33,7 @@ public class UserService {
     public boolean validatePassword(String rawPassword, String encodedPassword) {
         return passwordEncoder.matches(rawPassword, encodedPassword);
     }
+    public User findById(Long id) {
+        return userRepository.findById(id).orElse(null);
+    }
 }
