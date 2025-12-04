@@ -18,9 +18,9 @@ const TOWER_INITIAL_ARMY = 15; // 塔的初始兵力
 let gameState = {
     grid: [],
     players: [
-        { id: 0, name: '你', color: PLAYER_COLORS[0], territory: 5, army: 25, general: { x: 2, y: 2 }, alive: true },
-        { id: 1, name: '蓝色玩家', color: PLAYER_COLORS[1], territory: 5, army: 25, general: { x: GRID_SIZE - 3, y: 2 }, alive: true },
-        { id: 2, name: '绿色玩家', color: PLAYER_COLORS[2], territory: 5, army: 25, general: { x: Math.floor(GRID_SIZE / 2), y: GRID_SIZE - 3 }, alive: true }
+        { id: 0, name: '你', color: PLAYER_COLORS[0], territory: 5, army: 25, general: {x: 2, y: 2}, alive: true },
+        { id: 1, name: '蓝色玩家', color: PLAYER_COLORS[1], territory: 5, army: 25, general: {x: GRID_SIZE-3, y: 2}, alive: true },
+        { id: 2, name: '绿色玩家', color: PLAYER_COLORS[2], territory: 5, army: 25, general: {x: Math.floor(GRID_SIZE/2), y: GRID_SIZE-3}, alive: true }
     ],
     selectedTile: null,
     gameOver: false,
@@ -35,9 +35,9 @@ let gameState = {
 function showMessage(message, type) {
     const errorElement = document.getElementById('errorMessage');
     const successElement = document.getElementById('successMessage');
-
+    
     hideMessages();
-
+    
     if (type === 'error') {
         errorElement.textContent = message;
         errorElement.style.display = 'block';
@@ -57,19 +57,19 @@ async function checkServerStatus() {
     try {
         console.log('检查服务器状态...');
         const response = await fetch(`${API_BASE_URL}/api/health`);
-
+        
         if (!response.ok) {
             throw new Error(`HTTP错误! 状态: ${response.status}`);
         }
-
+        
         const data = await response.json();
         console.log('服务器状态正常:', data);
-
+        
         const statusElement = document.getElementById('serverStatus');
         const statusDot = statusElement.querySelector('.status-dot');
         statusDot.classList.add('connected');
         statusElement.innerHTML = '<span class="status-dot connected"></span> 服务器连接正常';
-
+        
         return true;
     } catch (error) {
         console.error('服务器连接失败:', error);
@@ -84,12 +84,12 @@ async function checkServerStatus() {
 async function login() {
     const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value;
-
+    
     if (!username || !password) {
         showMessage('请输入用户名和密码', 'error');
         return;
     }
-
+    
     try {
         const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
             method: 'POST',
@@ -98,9 +98,9 @@ async function login() {
             },
             body: JSON.stringify({ username, password })
         });
-
+        
         const data = await response.json();
-
+        
         if (data.success) {
             currentToken = data.token;
             currentUser = data.user;
@@ -119,12 +119,12 @@ async function login() {
 async function register() {
     const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value;
-
+    
     if (!username || !password) {
         showMessage('请输入用户名和密码', 'error');
         return;
     }
-
+    
     try {
         const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
             method: 'POST',
@@ -133,9 +133,9 @@ async function register() {
             },
             body: JSON.stringify({ username, password })
         });
-
+        
         const data = await response.json();
-
+        
         if (data.success) {
             showMessage('注册成功！请登录', 'success');
             document.getElementById('password').value = '';
@@ -160,11 +160,11 @@ function logout() {
     currentUser = null;
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-
+    
     if (gameState.gameTimer) {
         clearInterval(gameState.gameTimer);
     }
-
+    
     document.getElementById('gameContainer').style.display = 'none';
     document.getElementById('loginContainer').style.display = 'flex';
     document.getElementById('username').value = '';
@@ -175,7 +175,7 @@ function logout() {
 async function checkLoginStatus() {
     const token = localStorage.getItem('token');
     const user = localStorage.getItem('user');
-
+    
     if (token && user) {
         try {
             const response = await fetch(`${API_BASE_URL}/api/auth/verify`, {
@@ -185,9 +185,9 @@ async function checkLoginStatus() {
                 },
                 body: JSON.stringify({ token })
             });
-
+            
             const data = await response.json();
-
+            
             if (data.success) {
                 currentToken = token;
                 currentUser = JSON.parse(user);
@@ -205,42 +205,31 @@ async function checkLoginStatus() {
 }
 
 // 游戏核心函数
-// ==== 修改开始 ====
-// 游戏核心函数
 function initGame() {
-    console.log('开始新游戏...');
-
-    // 清理可能存在的胜利模态窗口
-    const victoryModal = document.getElementById('victoryModal');
-    if (victoryModal) {
-        document.body.removeChild(victoryModal);
-    }
-
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-
+    
     // 清除之前的游戏计时器
     if (gameState.gameTimer) {
         clearInterval(gameState.gameTimer);
-        gameState.gameTimer = null;
     }
-
-    // 重置游戏状态 - 必须确保 gameOver 为 false
-    gameState.gameOver = false;
-    gameState.selectedTile = null;
-    gameState.autoPlay = false;
-    gameState.lastAIMove = 0;  // 重置AI计时器
-    gameState.playerVision = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(false));
-
-    // 重置玩家状态 - 重新创建玩家数组
-    gameState.players = [
-        { id: 0, name: '你', color: PLAYER_COLORS[0], territory: 5, army: 25, general: { x: 2, y: 2 }, alive: true },
-        { id: 1, name: '蓝色玩家', color: PLAYER_COLORS[1], territory: 5, army: 25, general: { x: GRID_SIZE - 3, y: 2 }, alive: true },
-        { id: 2, name: '绿色玩家', color: PLAYER_COLORS[2], territory: 5, army: 25, general: { x: Math.floor(GRID_SIZE / 2), y: GRID_SIZE - 3 }, alive: true }
-    ];
-
-    // 重新初始化网格
+    
+    // 重置游戏状态
     gameState.grid = [];
+    gameState.selectedTile = null;
+    gameState.gameOver = false;
+    gameState.autoPlay = false;
+    gameState.lastAIMove = 0;
+    gameState.playerVision = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(false));
+    
+    // 重置玩家状态
+    gameState.players.forEach(player => {
+        player.territory = 5;
+        player.army = 25;
+        player.alive = true;
+    });
+    
+    // 初始化网格
     for (let y = 0; y < GRID_SIZE; y++) {
         gameState.grid[y] = [];
         for (let x = 0; x < GRID_SIZE; x++) {
@@ -251,61 +240,51 @@ function initGame() {
             };
         }
     }
-
+    
     // 放置将军和初始领土
     gameState.players.forEach(player => {
-        const { x, y } = player.general;
+        const {x, y} = player.general;
         gameState.grid[y][x] = {
             type: 'general',
             owner: player.id,
             army: 10
         };
-
+        
         generatePlayerTerritory(player.id, x, y, 4);
     });
-
+    
     // 生成山脉 - 增加到35个
     generateMountains(35);
-
+    
     // 生成塔 - 新增功能
     generateTowers(8);
-
+    
     // 更新视野和UI
     updatePlayerVision();
     drawGame(ctx);
     updateUI();
-
+    
     // 设置事件监听器
     setupEventListeners();
-
+    
     // 启动游戏循环
     gameState.gameTimer = setInterval(gameLoop, 100);
-
-    // 清理旧的军队增长定时器并设置新的
-    const oldIntervals = window.__armyGrowthInterval;
-    if (oldIntervals) {
-        clearInterval(oldIntervals);
-    }
-    window.__armyGrowthInterval = setInterval(growArmies, ARMY_GROWTH_INTERVAL);
-
-    console.log('游戏已重新开始，gameOver:', gameState.gameOver);
+    setInterval(growArmies, ARMY_GROWTH_INTERVAL);
 }
-// ==== 修改结束 ====
-
 
 function setupEventListeners() {
     const canvas = document.getElementById('gameCanvas');
     const newGameBtn = document.getElementById('newGameBtn');
     const howToPlayBtn = document.getElementById('howToPlayBtn');
     const autoPlayBtn = document.getElementById('autoPlayBtn');
-
+    
     // 移除旧的事件监听器
     canvas.removeEventListener('click', handleCanvasClick);
     newGameBtn.removeEventListener('click', initGame);
     howToPlayBtn.removeEventListener('click', showInstructions);
     autoPlayBtn.removeEventListener('click', toggleAutoPlay);
     document.removeEventListener('keydown', handleKeyDown);
-
+    
     // 添加新的事件监听器
     canvas.addEventListener('click', handleCanvasClick);
     newGameBtn.addEventListener('click', initGame);
@@ -319,19 +298,19 @@ function generateTowers(count) {
     let towersPlaced = 0;
     const maxAttempts = count * 10;
     let attempts = 0;
-
+    
     while (towersPlaced < count && attempts < maxAttempts) {
         attempts++;
         const x = Math.floor(Math.random() * GRID_SIZE);
         const y = Math.floor(Math.random() * GRID_SIZE);
-
+        
         // 确保塔不会生成在玩家起始位置附近和山脉上
         const isNearPlayer = gameState.players.some(player => {
             const dx = Math.abs(x - player.general.x);
             const dy = Math.abs(y - player.general.y);
             return dx <= 3 && dy <= 3;
         });
-
+        
         if (!isNearPlayer && gameState.grid[y][x].type === 'empty') {
             gameState.grid[y][x] = {
                 type: 'tower',
@@ -346,18 +325,18 @@ function generateTowers(count) {
 
 function generatePlayerTerritory(playerId, startX, startY, territorySize) {
     const directions = [
-        { dx: 0, dy: -1 }, { dx: 1, dy: 0 },
-        { dx: 0, dy: 1 }, { dx: -1, dy: 0 }
+        {dx: 0, dy: -1}, {dx: 1, dy: 0}, 
+        {dx: 0, dy: 1}, {dx: -1, dy: 0}
     ];
-
+    
     let territoriesPlaced = 0;
-    let queue = [{ x: startX, y: startY }];
+    let queue = [{x: startX, y: startY}];
     let visited = new Set();
     visited.add(`${startX},${startY}`);
-
+    
     while (queue.length > 0 && territoriesPlaced < territorySize) {
         const current = queue.shift();
-
+        
         if (Math.random() > 0.3 && (current.x !== startX || current.y !== startY)) {
             gameState.grid[current.y][current.x] = {
                 type: 'territory',
@@ -366,20 +345,20 @@ function generatePlayerTerritory(playerId, startX, startY, territorySize) {
             };
             territoriesPlaced++;
         }
-
+        
         // 随机打乱方向以避免模式化
         const shuffledDirections = [...directions].sort(() => Math.random() - 0.5);
-
+        
         for (const dir of shuffledDirections) {
             const newX = current.x + dir.dx;
             const newY = current.y + dir.dy;
-
-            if (newX >= 0 && newX < GRID_SIZE && newY >= 0 && newY < GRID_SIZE &&
-                !visited.has(`${newX},${newY}`) &&
+            
+            if (newX >= 0 && newX < GRID_SIZE && newY >= 0 && newY < GRID_SIZE && 
+                !visited.has(`${newX},${newY}`) && 
                 gameState.grid[newY][newX].type === 'empty') {
-
+                
                 visited.add(`${newX},${newY}`);
-                queue.push({ x: newX, y: newY });
+                queue.push({x: newX, y: newY});
             }
         }
     }
@@ -389,19 +368,19 @@ function generateMountains(count) {
     let mountainsPlaced = 0;
     const maxAttempts = count * 10;
     let attempts = 0;
-
+    
     while (mountainsPlaced < count && attempts < maxAttempts) {
         attempts++;
         const x = Math.floor(Math.random() * GRID_SIZE);
         const y = Math.floor(Math.random() * GRID_SIZE);
-
+        
         // 确保山脉不会生成在玩家起始位置附近
         const isNearPlayer = gameState.players.some(player => {
             const dx = Math.abs(x - player.general.x);
             const dy = Math.abs(y - player.general.y);
             return dx <= 2 && dy <= 2;
         });
-
+        
         if (!isNearPlayer && gameState.grid[y][x].type === 'empty') {
             gameState.grid[y][x] = {
                 type: 'mountain',
@@ -420,26 +399,26 @@ function updatePlayerVision() {
             gameState.playerVision[y][x] = false;
         }
     }
-
+    
     // 玩家领土和相邻格子可见
     for (let y = 0; y < GRID_SIZE; y++) {
         for (let x = 0; x < GRID_SIZE; x++) {
             const tile = gameState.grid[y][x];
-
+            
             if (tile.owner === 0) {
                 gameState.playerVision[y][x] = true;
-
+                
                 // 显示相邻格子
                 const directions = [
-                    { dx: -1, dy: -1 }, { dx: 0, dy: -1 }, { dx: 1, dy: -1 },
-                    { dx: -1, dy: 0 }, { dx: 1, dy: 0 },
-                    { dx: -1, dy: 1 }, { dx: 0, dy: 1 }, { dx: 1, dy: 1 }
+                    {dx: -1, dy: -1}, {dx: 0, dy: -1}, {dx: 1, dy: -1},
+                    {dx: -1, dy: 0},                   {dx: 1, dy: 0},
+                    {dx: -1, dy: 1},  {dx: 0, dy: 1},  {dx: 1, dy: 1}
                 ];
-
+                
                 for (const dir of directions) {
                     const newX = x + dir.dx;
                     const newY = y + dir.dy;
-
+                    
                     if (newX >= 0 && newX < GRID_SIZE && newY >= 0 && newY < GRID_SIZE) {
                         gameState.playerVision[newY][newX] = true;
                     }
@@ -447,7 +426,7 @@ function updatePlayerVision() {
             }
         }
     }
-
+    
     // 山脉和塔始终可见
     for (let y = 0; y < GRID_SIZE; y++) {
         for (let x = 0; x < GRID_SIZE; x++) {
@@ -460,32 +439,32 @@ function updatePlayerVision() {
 
 function drawGame(ctx) {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
+    
     // 绘制背景
     ctx.fillStyle = '#0f3460';
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
+    
     for (let y = 0; y < GRID_SIZE; y++) {
         for (let x = 0; x < GRID_SIZE; x++) {
             const tile = gameState.grid[y][x];
             const tileX = x * TILE_SIZE;
             const tileY = y * TILE_SIZE;
-
+            
             // 战争迷雾
             if (!gameState.playerVision[y][x]) {
                 ctx.fillStyle = FOG_COLOR;
                 ctx.fillRect(tileX, tileY, TILE_SIZE, TILE_SIZE);
-
+                
                 // 迷雾纹理
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
                 ctx.fillRect(tileX, tileY, TILE_SIZE, TILE_SIZE);
-
+                
                 ctx.strokeStyle = '#1a1a2e';
                 ctx.lineWidth = 1;
                 ctx.strokeRect(tileX, tileY, TILE_SIZE, TILE_SIZE);
                 continue;
             }
-
+            
             // 确定格子颜色
             if (tile.type === 'mountain') {
                 ctx.fillStyle = MOUNTAIN_COLOR;
@@ -496,32 +475,32 @@ function drawGame(ctx) {
             } else {
                 ctx.fillStyle = PLAYER_COLORS[tile.owner];
             }
-
+            
             ctx.fillRect(tileX, tileY, TILE_SIZE, TILE_SIZE);
-
+            
             // 格子边框
             ctx.strokeStyle = tile.owner === 0 ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)';
             ctx.lineWidth = 1;
             ctx.strokeRect(tileX, tileY, TILE_SIZE, TILE_SIZE);
-
+            
             // 绘制将军（皇冠）
             if (tile.type === 'general') {
                 ctx.fillStyle = '#ffffff';
                 ctx.font = '16px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText('👑', tileX + TILE_SIZE / 2, tileY + TILE_SIZE / 2);
+                ctx.fillText('👑', tileX + TILE_SIZE/2, tileY + TILE_SIZE/2);
             }
-
+            
             // 绘制塔（城堡） - 新增
             if (tile.type === 'tower') {
                 ctx.fillStyle = '#ffffff';
                 ctx.font = '16px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText('🏰', tileX + TILE_SIZE / 2, tileY + TILE_SIZE / 2);
+                ctx.fillText('🏰', tileX + TILE_SIZE/2, tileY + TILE_SIZE/2);
             }
-
+            
             // 绘制军队数量（如果可见）
             if (tile.army > 0 && gameState.playerVision[y][x]) {
                 if (tile.owner === 0 || isAdjacentToPlayer(x, y)) {
@@ -529,16 +508,16 @@ function drawGame(ctx) {
                     ctx.font = 'bold 12px Arial';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    ctx.fillText(tile.army.toString(), tileX + TILE_SIZE / 2, tileY + TILE_SIZE / 2);
+                    ctx.fillText(tile.army.toString(), tileX + TILE_SIZE/2, tileY + TILE_SIZE/2);
                 }
             }
-
+            
             // 绘制选中效果
             if (gameState.selectedTile && gameState.selectedTile.x === x && gameState.selectedTile.y === y) {
                 ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = 3;
                 ctx.strokeRect(tileX + 1, tileY + 1, TILE_SIZE - 2, TILE_SIZE - 2);
-
+                
                 // 选中光晕效果
                 ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
                 ctx.lineWidth = 1;
@@ -550,73 +529,73 @@ function drawGame(ctx) {
 
 function isAdjacentToPlayer(x, y) {
     const directions = [
-        { dx: 0, dy: -1 }, { dx: 1, dy: 0 },
-        { dx: 0, dy: 1 }, { dx: -1, dy: 0 }
+        {dx: 0, dy: -1}, {dx: 1, dy: 0}, 
+        {dx: 0, dy: 1}, {dx: -1, dy: 0}
     ];
-
+    
     for (const dir of directions) {
         const newX = x + dir.dx;
         const newY = y + dir.dy;
-
+        
         if (newX >= 0 && newX < GRID_SIZE && newY >= 0 && newY < GRID_SIZE) {
             if (gameState.grid[newY][newX].owner === 0) {
                 return true;
             }
         }
     }
-
+    
     return false;
 }
 
 function handleCanvasClick(event) {
     if (gameState.gameOver) return;
-
+    
     const canvas = document.getElementById('gameCanvas');
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
-
+    
     const x = Math.floor((event.clientX - rect.left) * scaleX / TILE_SIZE);
     const y = Math.floor((event.clientY - rect.top) * scaleY / TILE_SIZE);
-
+    
     if (x < 0 || x >= GRID_SIZE || y < 0 || y >= GRID_SIZE) return;
-
+    
     const tile = gameState.grid[y][x];
-
+    
     if (gameState.selectedTile) {
         // 尝试移动军队
         const selected = gameState.grid[gameState.selectedTile.y][gameState.selectedTile.x];
         const dx = Math.abs(x - gameState.selectedTile.x);
         const dy = Math.abs(y - gameState.selectedTile.y);
         const isAdjacent = (dx === 1 && dy === 0) || (dx === 0 && dy === 1);
-
+        
         if (isAdjacent && selected.army > 1 && tile.type !== 'mountain') {
             moveArmy(gameState.selectedTile.x, gameState.selectedTile.y, x, y);
             gameState.selectedTile = null;
         } else {
             // 选择新的格子
             if (tile.owner === 0 && tile.army > 1) {
-                gameState.selectedTile = { x, y };
+                gameState.selectedTile = {x, y};
             } else {
                 gameState.selectedTile = null;
             }
         }
     } else if (tile.owner === 0 && tile.army > 1) {
         // 选择格子
-        gameState.selectedTile = { x, y };
+        gameState.selectedTile = {x, y};
     }
-
+    
     updateUI();
 }
 
 function handleKeyDown(event) {
     if (gameState.gameOver || !gameState.selectedTile) return;
-
-    const { x, y } = gameState.selectedTile;
+    
+    const {x, y} = gameState.selectedTile;
     let newX = x;
     let newY = y;
-
-    switch (event.key) {
+    
+    switch(event.key) {
         case 'ArrowUp': newY = y - 1; break;
         case 'ArrowDown': newY = y + 1; break;
         case 'ArrowLeft': newX = x - 1; break;
@@ -624,21 +603,21 @@ function handleKeyDown(event) {
         case 'Escape': gameState.selectedTile = null; break;
         default: return;
     }
-
+    
     event.preventDefault();
-
+    
     if (newX < 0 || newX >= GRID_SIZE || newY < 0 || newY >= GRID_SIZE) return;
-
+    
     const selected = gameState.grid[y][x];
     const targetTile = gameState.grid[newY][newX];
-
+    
     if (selected.army > 1 && targetTile.type !== 'mountain') {
         moveArmy(x, y, newX, newY);
-        gameState.selectedTile = { x: newX, y: newY };
+        gameState.selectedTile = {x: newX, y: newY};
     } else if (targetTile.owner === 0 && targetTile.army > 1) {
-        gameState.selectedTile = { x: newX, y: newY };
+        gameState.selectedTile = {x: newX, y: newY};
     }
-
+    
     updateUI();
 }
 
@@ -646,7 +625,7 @@ function moveArmy(fromX, fromY, toX, toY) {
     const fromTile = gameState.grid[fromY][fromX];
     const toTile = gameState.grid[toY][toX];
     const movingArmy = fromTile.army - 1;
-
+    
     if (toTile.owner === -1) {
         // 移动到空地或塔
         // 如果是塔，需要满足兵力条件才能占领
@@ -660,7 +639,7 @@ function moveArmy(fromX, fromY, toX, toY) {
                 // 不满足兵力条件，攻击失败
                 toTile.army -= movingArmy;
                 fromTile.army = 1;
-                document.getElementById('gameStatus').innerHTML =
+                document.getElementById('gameStatus').innerHTML = 
                     `<div class="status-text">兵力不足！需要至少${TOWER_INITIAL_ARMY}兵力才能占领塔</div>`;
                 return; // 不继续执行
             }
@@ -671,32 +650,32 @@ function moveArmy(fromX, fromY, toX, toY) {
             toTile.type = 'territory';
             fromTile.army = 1;
         }
-
+        
     } else if (toTile.owner === fromTile.owner) {
         // 移动到自己的领地
         toTile.army += movingArmy;
         fromTile.army = 1;
-
+        
     } else {
         // 攻击敌人
         if (movingArmy > toTile.army) {
             // 记录被击败的玩家ID（在改变所有权之前）
             const defeatedPlayerId = toTile.owner;
-
+            
             // 攻击成功
             toTile.owner = fromTile.owner;
             toTile.army = movingArmy - toTile.army;
             fromTile.army = 1;
-
+            
             // 检查是否占领了将军
             if (toTile.type === 'general') {
                 // 标记该玩家死亡
                 const defeatedPlayer = gameState.players[defeatedPlayerId];
                 defeatedPlayer.alive = false;
-
+                
                 // 占领该玩家的所有土地，士兵数量减半
                 conquerPlayerTerritories(defeatedPlayerId, fromTile.owner);
-
+                
                 // 检查是否所有敌人都被击败
                 checkGameWinCondition();
             }
@@ -706,63 +685,54 @@ function moveArmy(fromX, fromY, toX, toY) {
             fromTile.army = 1;
         }
     }
-
+    
     updatePlayerStats();
 }
 
 // 占领被击败玩家的所有土地
 function conquerPlayerTerritories(defeatedPlayerId, conquerorId) {
-    let conqueredCount = 0;
-
     for (let y = 0; y < GRID_SIZE; y++) {
         for (let x = 0; x < GRID_SIZE; x++) {
             const tile = gameState.grid[y][x];
-
+            
             // 如果这块土地属于被击败的玩家，且不是塔
             if (tile.owner === defeatedPlayerId && tile.type !== 'tower') {
                 // 改变所有者
                 tile.owner = conquerorId;
-
+                
                 // 士兵数量减半（向下取整，至少为1）
                 tile.army = Math.max(1, Math.floor(tile.army / 2));
-
-                // 如果是将军，变成塔
+                
+                // 如果是将军，变成塔（而不是普通领土）
                 if (tile.type === 'general') {
                     tile.type = 'tower';
                     tile.army = TOWER_INITIAL_ARMY; // 设置为塔的初始兵力
                 }
-
-                conqueredCount++;
             }
         }
     }
-
+    
     // 更新玩家统计
     updatePlayerStats();
-
+    
     // 显示占领消息
     const defeatedPlayer = gameState.players[defeatedPlayerId];
     const conqueror = gameState.players[conquerorId];
-    document.getElementById('gameStatus').innerHTML =
-        `<div class="status-text">已击败 ${defeatedPlayer.name}！占领了 ${conqueredCount} 块领土！</div>`;
-
-    console.log(`征服了玩家 ${defeatedPlayerId} 的 ${conqueredCount} 块领土`);
+    document.getElementById('gameStatus').innerHTML = 
+        `<div class="status-text">已击败 ${defeatedPlayer.name}！占领了其所有领土！</div>`;
 }
 
-// 检查游戏胜利条件
+// 检查游戏胜利条件 - 新增函数
 function checkGameWinCondition() {
     const aliveEnemies = gameState.players.filter((player, index) => index !== 0 && player.alive);
-
+    
     if (aliveEnemies.length === 0) {
         gameState.gameOver = true;
         const winner = gameState.players[0];
-        document.getElementById('gameStatus').innerHTML =
+        document.getElementById('gameStatus').innerHTML = 
             `<div class="winning-message">🎉 游戏结束！${winner.name} 获胜！</div>`;
-
-        if (gameState.gameTimer) {
-            clearInterval(gameState.gameTimer);
-        }
-
+        clearInterval(gameState.gameTimer);
+        
         // 延迟显示胜利窗口，让玩家看到最终状态
         setTimeout(() => {
             showVictoryModal();
@@ -770,7 +740,7 @@ function checkGameWinCondition() {
     } else {
         // 只是击败了一个玩家，游戏继续
         const defeatedPlayers = gameState.players.filter((player, index) => index !== 0 && !player.alive);
-        document.getElementById('gameStatus').innerHTML =
+        document.getElementById('gameStatus').innerHTML = 
             `<div class="status-text">已击败 ${defeatedPlayers.length}个敌人！继续攻击剩余敌人！</div>`;
     }
 }
@@ -779,7 +749,6 @@ function checkGameWinCondition() {
 function showVictoryModal() {
     // 创建模态窗口
     const modal = document.createElement('div');
-    modal.id = 'victoryModal';
     modal.style.position = 'fixed';
     modal.style.top = '0';
     modal.style.left = '0';
@@ -790,7 +759,7 @@ function showVictoryModal() {
     modal.style.justifyContent = 'center';
     modal.style.alignItems = 'center';
     modal.style.zIndex = '2000';
-
+    
     // 创建内容区域
     const content = document.createElement('div');
     content.style.background = 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)';
@@ -801,7 +770,7 @@ function showVictoryModal() {
     content.style.border = '2px solid rgba(255, 126, 95, 0.3)';
     content.style.maxWidth = '500px';
     content.style.width = '90%';
-
+    
     // 创建标题
     const title = document.createElement('h2');
     title.textContent = '🎉 恭喜获胜！ 🎉';
@@ -812,79 +781,59 @@ function showVictoryModal() {
     title.style.webkitBackgroundClip = 'text';
     title.style.backgroundClip = 'text';
     title.style.color = 'transparent';
-
+    
     // 创建统计信息
     const stats = document.createElement('div');
     stats.style.marginBottom = '30px';
     stats.style.color = '#e6e6e6';
-
+    
     const territoryStat = document.createElement('p');
     territoryStat.textContent = `最终领土: ${gameState.players[0].territory}`;
     territoryStat.style.fontSize = '1.2rem';
     territoryStat.style.margin = '10px 0';
-
+    
     const armyStat = document.createElement('p');
     armyStat.textContent = `最终军队: ${gameState.players[0].army}`;
     armyStat.style.fontSize = '1.2rem';
     armyStat.style.margin = '10px 0';
-
+    
     stats.appendChild(territoryStat);
     stats.appendChild(armyStat);
-
+    
     // 创建按钮容器
     const buttonContainer = document.createElement('div');
     buttonContainer.style.display = 'flex';
     buttonContainer.style.gap = '15px';
     buttonContainer.style.justifyContent = 'center';
-    buttonContainer.style.flexDirection = 'column';
-    buttonContainer.style.alignItems = 'center';
-
-    // 创建下一局按钮
-    const nextGameButton = document.createElement('button');
-    nextGameButton.textContent = '开始下一局';
-    nextGameButton.style.background = 'linear-gradient(135deg, #ff7e5f, #feb47b)';
-    nextGameButton.style.color = 'white';
-    nextGameButton.style.border = 'none';
-    nextGameButton.style.padding = '15px 30px';
-    nextGameButton.style.borderRadius = '10px';
-    nextGameButton.style.fontSize = '1.2rem';
-    nextGameButton.style.cursor = 'pointer';
-    nextGameButton.style.fontWeight = '600';
-    nextGameButton.style.transition = 'all 0.3s ease';
-    nextGameButton.style.width = '200px';
-
-    nextGameButton.onmouseover = function () {
+    
+    // 创建重新开始按钮
+    const restartButton = document.createElement('button');
+    restartButton.textContent = '重新开始游戏';
+    restartButton.style.background = 'linear-gradient(135deg, #ff7e5f, #feb47b)';
+    restartButton.style.color = 'white';
+    restartButton.style.border = 'none';
+    restartButton.style.padding = '12px 24px';
+    restartButton.style.borderRadius = '10px';
+    restartButton.style.fontSize = '1.1rem';
+    restartButton.style.cursor = 'pointer';
+    restartButton.style.fontWeight = '600';
+    restartButton.style.transition = 'all 0.3s ease';
+    
+    restartButton.onmouseover = function() {
         this.style.transform = 'translateY(-2px)';
         this.style.boxShadow = '0 8px 20px rgba(255, 126, 95, 0.4)';
     };
-
-
-    nextGameButton.onclick = function () {
-        document.body.removeChild(modal);
-
-        // 强制重置游戏结束状态
-        gameState.gameOver = false;
-
-        // 重新初始化游戏
-        initGame();
-
-        // 手动启动游戏循环
-        if (gameState.gameTimer) {
-            clearInterval(gameState.gameTimer);
-        }
-        gameState.gameTimer = setInterval(gameLoop, 100);
-
-        // 强制重新绘制
-        const ctx = document.getElementById('gameCanvas').getContext('2d');
-        drawGame(ctx);
-        updateUI();
+    
+    restartButton.onmouseout = function() {
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = 'none';
     };
-    // ==== 修改结束 ====
-    nextGameButton.onclick = function () {
+    
+    restartButton.onclick = function() {
         document.body.removeChild(modal);
         initGame();
     };
-
+    
     // 创建返回主菜单按钮
     const menuButton = document.createElement('button');
     menuButton.textContent = '返回主菜单';
@@ -897,39 +846,38 @@ function showVictoryModal() {
     menuButton.style.cursor = 'pointer';
     menuButton.style.fontWeight = '600';
     menuButton.style.transition = 'all 0.3s ease';
-    menuButton.style.width = '200px';
-
-    menuButton.onmouseover = function () {
+    
+    menuButton.onmouseover = function() {
         this.style.borderColor = '#ff7e5f';
         this.style.transform = 'translateY(-2px)';
     };
-
-    menuButton.onmouseout = function () {
+    
+    menuButton.onmouseout = function() {
         this.style.transform = 'translateY(0)';
     };
-
-    menuButton.onclick = function () {
+    
+    menuButton.onclick = function() {
         document.body.removeChild(modal);
         logout();
     };
-
+    
     // 组装所有元素
-    buttonContainer.appendChild(nextGameButton);
+    buttonContainer.appendChild(restartButton);
     buttonContainer.appendChild(menuButton);
-
+    
     content.appendChild(title);
     content.appendChild(stats);
     content.appendChild(buttonContainer);
-
+    
     modal.appendChild(content);
-
+    
     // 添加到页面
     document.body.appendChild(modal);
 }
 
 function growArmies() {
     if (gameState.gameOver) return;
-
+    
     for (let y = 0; y < GRID_SIZE; y++) {
         for (let x = 0; x < GRID_SIZE; x++) {
             const tile = gameState.grid[y][x];
@@ -940,19 +888,19 @@ function growArmies() {
             }
         }
     }
-
+    
     updatePlayerStats();
 }
 
 function gameLoop() {
     const currentTime = Date.now();
-
+    
     // AI移动 - 无论是否自动演示模式，AI都会移动
     if (!gameState.gameOver && currentTime - gameState.lastAIMove > gameState.aiMoveInterval) {
         executeAITurn();
         gameState.lastAIMove = currentTime;
     }
-
+    
     updatePlayerVision();
     const ctx = document.getElementById('gameCanvas').getContext('2d');
     drawGame(ctx);
@@ -963,27 +911,27 @@ function executeAITurn() {
     for (let i = 1; i < gameState.players.length; i++) {
         const aiPlayer = gameState.players[i];
         if (!aiPlayer.alive) continue; // 跳过已死亡的AI玩家
-
+        
         // 收集所有可移动的领土
         const movableTerritories = [];
         for (let y = 0; y < GRID_SIZE; y++) {
             for (let x = 0; x < GRID_SIZE; x++) {
                 const tile = gameState.grid[y][x];
                 if (tile.owner === aiPlayer.id && tile.army > 1) {
-                    movableTerritories.push({ x, y, army: tile.army });
+                    movableTerritories.push({x, y, army: tile.army});
                 }
             }
         }
-
+        
         if (movableTerritories.length === 0) continue;
-
+        
         // 按军队数量排序，优先使用兵力多的领土
         movableTerritories.sort((a, b) => b.army - a.army);
-
+        
         // 尝试为每个可移动领土找到最佳移动
         for (const territory of movableTerritories) {
             const bestMove = findBestMove(territory.x, territory.y, aiPlayer.id);
-
+            
             if (bestMove) {
                 // 执行最佳移动
                 moveArmy(territory.x, territory.y, bestMove.x, bestMove.y);
@@ -995,26 +943,26 @@ function executeAITurn() {
 
 function findBestMove(x, y, playerId) {
     const directions = [
-        { dx: 0, dy: -1 }, { dx: 1, dy: 0 },
-        { dx: 0, dy: 1 }, { dx: -1, dy: 0 }
+        {dx: 0, dy: -1}, {dx: 1, dy: 0}, 
+        {dx: 0, dy: 1}, {dx: -1, dy: 0}
     ];
-
+    
     const fromTile = gameState.grid[y][x];
     const movingArmy = fromTile.army - 1;
     let bestMove = null;
     let bestScore = -Infinity;
-
+    
     for (const dir of directions) {
         const toX = x + dir.dx;
         const toY = y + dir.dy;
-
+        
         // 检查边界和山脉
         if (toX < 0 || toX >= GRID_SIZE || toY < 0 || toY >= GRID_SIZE) continue;
         if (gameState.grid[toY][toX].type === 'mountain') continue;
-
+        
         const toTile = gameState.grid[toY][toX];
         let score = 0;
-
+        
         // 攻击敌方将军 - 最高优先级
         if (toTile.type === 'general' && toTile.owner !== playerId && toTile.owner !== -1) {
             if (movingArmy > toTile.army) {
@@ -1052,16 +1000,16 @@ function findBestMove(x, y, playerId) {
         else if (toTile.owner === playerId) {
             score = 5;
         }
-
+        
         // 添加随机因素使AI行为更不可预测
         score += Math.random() * 10;
-
+        
         if (score > bestScore) {
             bestScore = score;
-            bestMove = { x: toX, y: toY, score };
+            bestMove = {x: toX, y: toY, score};
         }
     }
-
+    
     // 只返回得分足够高的移动
     return bestScore > 10 ? bestMove : null;
 }
@@ -1072,7 +1020,7 @@ function updatePlayerStats() {
         player.territory = 0;
         player.army = 0;
     });
-
+    
     // 计算统计数据
     for (let y = 0; y < GRID_SIZE; y++) {
         for (let x = 0; x < GRID_SIZE; x++) {
@@ -1089,15 +1037,15 @@ function updateUI() {
     // 更新玩家统计
     document.getElementById('playerTerritory').textContent = gameState.players[0].territory;
     document.getElementById('playerArmy').textContent = gameState.players[0].army;
-
+    
     // 更新敌人统计（如果可见）
     for (let i = 1; i < gameState.players.length; i++) {
         const player = gameState.players[i];
         const canSee = canSeePlayerInfo(i);
-
+        
         const territoryElement = document.getElementById(i === 1 ? 'blueTerritory' : 'greenTerritory');
         const armyElement = document.getElementById(i === 1 ? 'blueArmy' : 'greenArmy');
-
+        
         if (canSee) {
             if (player.alive) {
                 territoryElement.textContent = player.territory;
@@ -1111,7 +1059,7 @@ function updateUI() {
             armyElement.textContent = '?';
         }
     }
-
+    
     // 更新选中信息
     const selectedInfo = document.getElementById('selectedInfo');
     if (gameState.selectedTile) {
@@ -1120,12 +1068,12 @@ function updateUI() {
         if (tile.type === 'general') tileType = '将军';
         else if (tile.type === 'tower') tileType = '塔';
         else if (tile.type === 'territory') tileType = '领土';
-
+        
         selectedInfo.textContent = `选中: 位置(${gameState.selectedTile.x},${gameState.selectedTile.y}) ${tileType} 兵力: ${tile.army}`;
     } else {
         selectedInfo.textContent = '';
     }
-
+    
     // 更新游戏状态
     const statusElement = document.getElementById('gameStatus').querySelector('.status-text');
     if (gameState.gameOver) {
@@ -1154,8 +1102,8 @@ function toggleAutoPlay() {
     gameState.autoPlay = !gameState.autoPlay;
     const button = document.getElementById('autoPlayBtn');
     button.textContent = gameState.autoPlay ? '停止演示' : '自动演示';
-    button.style.background = gameState.autoPlay ?
-        'linear-gradient(135deg, #e74c3c, #c0392b)' :
+    button.style.background = gameState.autoPlay ? 
+        'linear-gradient(135deg, #e74c3c, #c0392b)' : 
         'linear-gradient(135deg, #ff7e5f, #feb47b)';
 }
 
@@ -1200,23 +1148,23 @@ Generals.io 游戏规则：
   • 需要击败所有敌人才能获胜
   • 集中兵力攻击敌人弱点
     `;
-
+    
     alert(instructions);
 }
 
 // 页面加载初始化
-window.onload = function () {
+window.onload = function() {
     console.log('页面加载完成，开始检查服务器状态...');
     checkServerStatus();
     checkLoginStatus();
-
+    
     // 添加回车键支持
-    document.getElementById('password').addEventListener('keypress', function (e) {
+    document.getElementById('password').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             login();
         }
     });
-
+    
     // 每30秒检查一次服务器状态
     setInterval(checkServerStatus, 30000);
 };
